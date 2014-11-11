@@ -11,8 +11,5 @@ type RunnerPlugin() =
         printfn "after reload!"
     )
 
-    member x.InitPlugin (rs:RunnerState) = 
-        { BeforeReload = beforeReload; AfterReload = afterReload }
-
     interface IRunnerPlugin with
-        member x.Init() = beforeReload,afterReload
+        member x.Init(rs:RunnerState) = { BeforeReload = beforeReload; AfterReload = afterReload }

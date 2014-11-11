@@ -116,35 +116,31 @@ type Runner() =
                 types 
                     |> List.fold (fun acc t -> 
                         let members = t.GetNestedTypes() 
-                        let initFn = members |> Seq.tryFind (fun m -> 
-                            let hasIRunnerPlugin = m.GetInterfaces() |> Seq.tryFind (fun i -> i.FullName.Contains("IRunnerPlugin") ) 
-                            match hasIRunnerPlugin with 
+                        let initFn = members |> Seq.tryPick (fun m -> 
+                            let runnerPluginIFace = m.GetInterfaces() |> Seq.tryFind (fun i -> i.FullName.Contains("IRunnerPlugin") ) 
+                            match runnerPluginIFace with 
                             | Some i -> 
                                 logger.Info (sprintf "Found plugin %A in %s" m scriptName)
-                                true
+                                Some (m, i)
                             | None -> 
-                                false
+                                None
                         )
                         match initFn with
                         | None -> acc
-                        | Some fn -> 
-                            (t,fn)::acc
+                        | Some (baseType,iface) -> 
+                            (baseType,iface)::acc
                     ) []
 
             match types with 
             | [] -> failwithf "Illegal plugin: %A, contains no implementation of IRunnerPlugin: %A" scriptName types
             | [x] ->
-                let t, fn = x
-                let cons = fn.GetConstructor([||])
+                let baseType, iface = x
+                let cons = baseType.GetConstructor([||])
                 let obj = cons.Invoke([||])
 
-                // TODO: call through interface, not this member
-                let initFnName = "InitPlugin"
-                let initFn = fn.GetMember(initFnName)
-
                 let flags = BindingFlags.DeclaredOnly ||| BindingFlags.Static ||| BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Instance ||| BindingFlags.InvokeMethod
-                let args = [| runnerState :> obj |] //runner
-                let res = fn.InvokeMember(initFnName, flags, null, obj, args) 
+                let args = [| runnerState :> obj |] 
+                let res = iface.InvokeMember("Init", flags, null, obj, args) 
 
                 // the return value is a record of type Types.InitResult.  But, since the plugin is loaded in a different assembly, its _not_ the
                 // same as the Types.InitResult we have available here, so a cast will fail.  Therefore we have to use reflection to read the field
