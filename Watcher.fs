@@ -1,12 +1,12 @@
-﻿namespace XFSIRunner
+﻿namespace FSIRunner
 
 open System
 open System.IO
 open System.Threading
 open System.Threading.Tasks
 
-open XFSIRunner
-open XFSIRunner.RunnerTypes
+open FSIRunner
+open FSIRunner.Types
 
 type ActiveWatcher = Task<unit> * CancellationTokenSource
 type WatchEvent = 

@@ -1,4 +1,4 @@
-﻿namespace XFSIRunner
+﻿namespace FSIRunner
 
 open Microsoft.FSharp.Compiler.Interactive.Shell
 
@@ -9,8 +9,8 @@ open System.Diagnostics
 open System.Reflection
 open Microsoft.FSharp.Reflection
 
-open XFSIRunner
-open XFSIRunner.RunnerTypes
+open FSIRunner
+open FSIRunner.Types
 
 type FSISession() = 
     let sbOut = new StringBuilder()
@@ -100,13 +100,13 @@ type Runner() =
     let MaxReloadsPerSession = 10
     let mutable reloadCount = 0
 
-    let runnerState = new RunnerTypes.RunnerState() 
+    let runnerState = new Types.RunnerState() 
 
     let rescanTypes() = 
 #if INTERACTIVE
-        let res = fsiSession.Value.EvalExpression "XFSIRunner.XTypeScan.scan(false)"
+        let res = fsiSession.Value.EvalExpression "FSIRunner.XTypeScan.scan(false)"
 #else
-        let res = fsiSession.Value.EvalExpression "XFSIRunner.XTypeScan.scan(true)"
+        let res = fsiSession.Value.EvalExpression "FSIRunner.XTypeScan.scan(true)"
 #endif
         let types = res.Value.ReflectionValue :?> System.Type list
         types
@@ -146,8 +146,8 @@ type Runner() =
                 let args = [| runnerState :> obj |] //runner
                 let res = fn.InvokeMember(initFnName, flags, null, obj, args) 
 
-                // the return value is a record of type RunnerTypes.InitResult.  But, since the plugin is loaded in a different assembly, its _not_ the
-                // same as the RunnerTypes.InitResult we have available here, so a cast will fail.  Therefore we have to use reflection to read the field
+                // the return value is a record of type Types.InitResult.  But, since the plugin is loaded in a different assembly, its _not_ the
+                // same as the Types.InitResult we have available here, so a cast will fail.  Therefore we have to use reflection to read the field
                 // values that we are interested in.
                 let getPropVal name =
                     let brP = res.GetType().GetProperty(name)

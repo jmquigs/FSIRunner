@@ -1,4 +1,4 @@
-﻿open XFSIRunner
+﻿open FSIRunner
 
-#load "RunnerTypes.fs"
+#load "Types.fs"
 #load "TypeScan.fs"

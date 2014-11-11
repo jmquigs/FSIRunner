@@ -1,6 +1,6 @@
-﻿namespace XFSIRunner
+﻿namespace FSIRunner
 
-module RunnerTypes =
+module Types =
     type Logger =
         abstract member Info: string -> unit
         abstract member Error: string -> unit

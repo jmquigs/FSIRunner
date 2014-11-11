@@ -1,13 +1,11 @@
-﻿namespace XFSIRunner
+﻿namespace FSIRunner
 
-open XFSIRunner
-open XFSIRunner.RunnerTypes
+open FSIRunner
+open FSIRunner.Types
+
+open System.Reflection
 
 module XTypeScan =
-    open RunnerTypes
-
-    open System.Reflection
-
     let typesDefinedInSession = new System.Collections.Generic.HashSet<System.Type>()
 
     let scan(compiled) = 

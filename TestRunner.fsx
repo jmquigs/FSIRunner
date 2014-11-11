@@ -1,5 +1,5 @@
-﻿#load "FSIRunner.fsx"
+﻿#load "Runner.fsx"
 
-let r = new XFSIRunner.Runner()
+let r = new FSIRunner.Runner()
 r.Watch "." [ "TestPlugin.fsx" ]
 

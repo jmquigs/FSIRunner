@@ -1,8 +1,8 @@
 ﻿//#r "../packages/FSharp.Compiler.Service.0.0.73/lib/net45/FSharp.Compiler.Service.dll"
 //#r "bin/Debug/FSIRunner.dll"
 
-#load "RunnerTypes.fs"
-open XFSIRunner.RunnerTypes
+#load "Types.fs"
+open FSIRunner.Types
 
 type RunnerPlugin() =
     let beforeReload:BeforeReloadFn = (fun rs -> printfn "before reload!" )
