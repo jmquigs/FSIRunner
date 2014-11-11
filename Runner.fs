@@ -53,7 +53,7 @@ type FSISession() =
             errStream.Close()
             outStream.Close()
 
-type Plugin = { FNs:InitResult; Instance: obj; Name: string }
+type Plugin = { FNs:PluginDefinition; Instance: obj; Name: string }
 
 type RunnerConfig() =
     static let mutable sDir = ""
@@ -142,16 +142,16 @@ type Runner() =
                 let args = [| runnerState :> obj |] 
                 let res = iface.InvokeMember("Init", flags, null, obj, args) 
 
-                // the return value is a record of type Types.InitResult.  But, since the plugin is loaded in a different assembly, its _not_ the
-                // same as the Types.InitResult we have available here, so a cast will fail.  Therefore we have to use reflection to read the field
+                // the return value is a record of type Types.PluginDefinition.  But, since the plugin is loaded in a different assembly, its _not_ the
+                // same as the Types.PluginDefinition we have available here, so a cast will fail.  Therefore we have to use reflection to read the field
                 // values that we are interested in.
                 let getPropVal name =
                     let brP = res.GetType().GetProperty(name)
                     (FSharpValue.GetRecordField(res, brP))
 
                 let fns = { 
-                    InitResult.BeforeReload = getPropVal "BeforeReload" :?> BeforeReloadFn; 
-                    InitResult.AfterReload = getPropVal "AfterReload" :?> AfterReloadFn; }
+                    PluginDefinition.BeforeReload = getPropVal "BeforeReload" :?> BeforeReloadFn; 
+                    PluginDefinition.AfterReload = getPropVal "AfterReload" :?> AfterReloadFn; }
 
                 { Plugin.FNs = fns; Instance = obj; Name=scriptName }
             | h::t -> failwithf "Illegal plugin: %A, contains more than one implementation of IRunnerPlugin: %A" scriptName types

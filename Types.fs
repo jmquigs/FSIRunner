@@ -12,10 +12,10 @@ module Types =
     type BeforeReloadFn = RunnerState -> unit
     type AfterReloadFn = RunnerState -> unit
 
-    type InitResult = {BeforeReload: BeforeReloadFn; AfterReload: AfterReloadFn}
+    type PluginDefinition = {BeforeReload: BeforeReloadFn; AfterReload: AfterReloadFn}
 
     type IRunnerPlugin =
-        abstract member Init: RunnerState -> InitResult
+        abstract member Init: RunnerState -> PluginDefinition
 
     let private log level s = printfn "%s: %s" level s
     let DefaultLogger = { new Logger with 
