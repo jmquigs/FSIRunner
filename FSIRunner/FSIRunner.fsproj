@@ -38,7 +38,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="FSharp.Compiler.Service">
-      <HintPath>..\packages\FSharp.Compiler.Service.0.0.73\lib\net40\FSharp.Compiler.Service.dll</HintPath>
+      <HintPath>packages\FSharp.Compiler.Service\lib\net45\FSharp.Compiler.Service.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +54,6 @@
   <ItemGroup>
     <None Include="TestPlugin.fsx" />
     <None Include="TestRunner.fsx" />
-    <None Include="packages.config" />
     <None Include="paket.dependencies" />
   </ItemGroup>
 </Project>
