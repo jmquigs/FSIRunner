@@ -15,10 +15,10 @@ type RunnerPlugin() =
     let beforeReload:BeforeReloadFn = (fun rs -> 
                 let ok, host = rs.TryGetValue hostKey
                 if ok then
+                    rs.Remove hostKey |> ignore
                     let host = host :?> NancyHost
                     printfn "Stopping previous host" 
                     Main.stopNancy host
-                    rs.Remove hostKey |> ignore
             )
 
     let afterReload:AfterReloadFn = (fun rs ->
