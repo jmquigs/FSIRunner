@@ -1,0 +1,31 @@
+﻿#r "System.Net.Http.dll"
+#r "packages/Nancy/lib/net40/Nancy.dll"
+#r "packages/Nancy.Hosting.Self/lib/net40/Nancy.Hosting.Self.dll"
+
+#load "WebServer.fs"
+#load "Program.fs"
+
+#load "../FSIRunner/Types.fs"
+open FSIRunner.Types
+open Nancy.Hosting.Self
+
+type RunnerPlugin() =
+    let hostKey = "prev_nancy_host"
+
+    let beforeReload:BeforeReloadFn = (fun rs -> 
+                let ok, host = rs.TryGetValue hostKey
+                if ok then
+                    let host = host :?> NancyHost
+                    printfn "Stopping previous host" 
+                    Main.stopNancy host
+                    rs.Remove hostKey |> ignore
+            )
+
+    let afterReload:AfterReloadFn = (fun rs ->
+                let host = Main.startNancy()
+                rs.Add(hostKey, host)
+            )
+
+    interface IRunnerPlugin with
+        member x.Init(rs:RunnerState) = { BeforeReload = beforeReload; AfterReload = afterReload }
+

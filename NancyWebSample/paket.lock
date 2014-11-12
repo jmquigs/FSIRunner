@@ -1,0 +1,6 @@
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    Nancy (0.23.2)
+    Nancy.Hosting.Self (0.23.2)
+      Nancy (>= 0.23.2)

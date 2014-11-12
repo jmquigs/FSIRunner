@@ -1,0 +1,4 @@
+﻿source https://nuget.org/api/v2
+
+nuget Nancy -> 0.23.2
+nuget Nancy.Hosting.Self -> 0.23.2
