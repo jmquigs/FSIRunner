@@ -55,5 +55,6 @@
     <None Include="TestPlugin.fsx" />
     <None Include="TestRunner.fsx" />
     <None Include="packages.config" />
+    <None Include="paket.dependencies" />
   </ItemGroup>
 </Project>
