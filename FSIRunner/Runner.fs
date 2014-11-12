@@ -208,10 +208,10 @@ type Runner() =
             pluginScripts |> Seq.iter (fun pScript -> 
                 let ok, plugin = pluginDict.TryGetValue pScript
                 if ok then
-                    runnerState.Remove(StateKeys.NewTypes) |> ignore
                     runnerState.Add(StateKeys.NewTypes, runnerState.[(stateTypesKey plugin.Name)])
                     logger.Info (sprintf "Calling AfterReload for %s" plugin.Name)
                     plugin.FNs.AfterReload runnerState
+                    runnerState.Remove(StateKeys.NewTypes) |> ignore
             )
 
             logger.Info (sprintf "Plugin reload done; eval: %dms, typescan: %dms, plugin: %dms" totalEval totalTS totalPlugin)
