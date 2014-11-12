@@ -156,6 +156,9 @@ type Runner() =
                 { Plugin.FNs = fns; Instance = obj; Name=scriptName }
             | h::t -> failwithf "Illegal plugin: %A, contains more than one implementation of IRunnerPlugin: %A" scriptName types
 
+    let stateTypesKey script = 
+        "__" + script + "Types"
+
     let reloadPluginScript script = 
         let reloadSW = newSW()
 
@@ -171,7 +174,7 @@ type Runner() =
         let plugin = initPlugin script newTypes
         pluginDict.Add(script, plugin)
 
-        let typesKey = script + "Types"
+        let typesKey = stateTypesKey script
         runnerState.Remove(typesKey) |> ignore
         runnerState.Add(typesKey, newTypes) |> ignore
 
