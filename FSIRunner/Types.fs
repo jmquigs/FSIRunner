@@ -24,3 +24,6 @@ module Types =
         member x.Trace s = log "trace" s
         member x.Error s = log "error" s
     }
+
+module StateKeys =
+    let NewTypes = "__newtypes"
