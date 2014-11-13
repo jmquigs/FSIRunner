@@ -2,6 +2,7 @@
 
 #r "packages/Fuchu/lib/Fuchu.dll"
 #load "Tests.fs"
+#load "Tests2.fs"
 
 #load "../FSIRunner/TestUtil.fs"
 #load "../FSIRunner/Types.fs"

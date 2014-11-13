@@ -59,6 +59,7 @@
     <Compile Include="WebServer.fs" />
     <Compile Include="WebModules.fs" />
     <Compile Include="Tests.fs" />
+    <Compile Include="Tests2.fs" />
     <Compile Include="Program.fs" />
     <None Include="TestsPlugin.fsx" />
     <None Include="WebPlugin.fsx" />
