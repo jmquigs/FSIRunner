@@ -13,7 +13,7 @@ type RunnerPlugin() =
                 if ok then
                     rs.Remove hostKey |> ignore
                     let host = host :?> NancyHost
-                    printfn "Stopping previous host" 
+                    printfn "Web: Stopping previous host" 
                     Main.stopNancy host
             )
 
@@ -24,4 +24,3 @@ type RunnerPlugin() =
 
     interface IRunnerPlugin with
         member x.Init(rs:RunnerState) = { BeforeReload = beforeReload; AfterReload = afterReload }
-
