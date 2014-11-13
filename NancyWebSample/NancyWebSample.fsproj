@@ -63,8 +63,8 @@
     <Compile Include="Program.fs" />
     <None Include="TestsPlugin.fsx" />
     <None Include="WebPlugin.fsx" />
-    <None Include="Watch.fsx" />
     <None Include="Project.fsx" />
+    <None Include="StartRunner.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="views\" />
