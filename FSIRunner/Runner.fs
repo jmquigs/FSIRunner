@@ -12,6 +12,7 @@ open Microsoft.FSharp.Reflection
 open FSIRunner
 open FSIRunner.Types
 
+// Embedded FSI session.  Mostly ripped from http://fsharp.github.io/FSharp.Compiler.Service/interactive.html
 type FSISession() = 
     let sbOut = new StringBuilder()
     let sbErr = new StringBuilder()
@@ -235,5 +236,5 @@ type Runner() =
         ), Watcher.FsFile)
         watcher.Watch dirs
 
-        // sleep forever
+        // sleep forever (ctrl-c to quit)
         Threading.Thread.Sleep(Threading.Timeout.Infinite)
