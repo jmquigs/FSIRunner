@@ -3,5 +3,5 @@
 #load "../FSIRunner/Runner.fsx"
 
 let r = new FSIRunner.Runner()
-r.Watch "." [ "WebPlugin.fsx" ]
+r.Watch "." [ "WebPlugin.fsx"; "TestsPlugin.fsx" ]
 

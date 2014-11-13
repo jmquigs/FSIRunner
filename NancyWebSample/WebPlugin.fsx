@@ -1,13 +1,9 @@
-﻿#r "System.Net.Http.dll"
-#r "packages/Nancy/lib/net40/Nancy.dll"
-#r "packages/Nancy.Hosting.Self/lib/net40/Nancy.Hosting.Self.dll"
+﻿#load "Project.fsx"
 
-#load "WebServer.fs"
-#load "Program.fs"
+open Nancy.Hosting.Self
 
 #load "../FSIRunner/Types.fs"
 open FSIRunner.Types
-open Nancy.Hosting.Self
 
 type RunnerPlugin() =
     let hostKey = "prev_nancy_host"

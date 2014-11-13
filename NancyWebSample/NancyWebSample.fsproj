@@ -45,18 +45,25 @@
       <HintPath>packages\Nancy.Hosting.Self\lib\net40\Nancy.Hosting.Self.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http" />
+    <Reference Include="Fuchu">
+      <HintPath>packages\Fuchu\lib\Fuchu.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="WebServer.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
   <ItemGroup>
-    <None Include="paket.dependencies" />
     <None Include="views\index.html" />
-    <None Include="Watch.fsx" />
+    <None Include="paket.dependencies" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="WebServer.fs" />
+    <Compile Include="WebModules.fs" />
+    <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
+    <None Include="TestsPlugin.fsx" />
     <None Include="WebPlugin.fsx" />
+    <None Include="Watch.fsx" />
+    <None Include="Project.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="views\" />
