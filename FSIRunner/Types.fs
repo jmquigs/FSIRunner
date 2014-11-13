@@ -19,10 +19,10 @@ module Types =
 
     let private log level s = printfn "%s: %s" level s
     let DefaultLogger = { new Logger with 
-        member x.Info s = log "info" s
-        member x.Warn s = log "warn" s
-        member x.Trace s = log "trace" s
-        member x.Error s = log "error" s
+        member x.Info s = log "Runner" s
+        member x.Warn s = log "Runner[warn]" s
+        member x.Trace s = log "Runner[trace]" s
+        member x.Error s = log "Runner[error]" s
     }
 
 module StateKeys =
