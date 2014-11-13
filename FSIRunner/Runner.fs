@@ -209,8 +209,10 @@ type Runner() =
                 if ok then
                     runnerState.Add(StateKeys.NewTypes, runnerState.[(stateTypesKey plugin.Name)])
                     logger.Info (sprintf "Calling AfterReload for %s" plugin.Name)
-                    plugin.FNs.AfterReload runnerState
-                    runnerState.Remove(StateKeys.NewTypes) |> ignore
+                    try
+                        plugin.FNs.AfterReload runnerState
+                    finally
+                        runnerState.Remove(StateKeys.NewTypes) |> ignore
             )
 
             logger.Info (sprintf "Plugin reload done; eval: %dms, typescan: %dms, plugin: %dms" totalEval totalTS totalPlugin)
