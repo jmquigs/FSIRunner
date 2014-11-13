@@ -226,14 +226,14 @@ type Runner() =
                     // clear the output buffer since we printed the error
                     fsiSession.Value.ClearErrorBuffer()
 
-    member x.Watch dir pluginScripts = 
+    member x.Watch (dirs: string list) (pluginScripts: string list) = 
         reinitSession()
         reload pluginScripts
         let watcher = new Watcher((fun () -> 
             //printfn "Change detected, reloading"
             reload pluginScripts
         ), Watcher.FsFile)
-        watcher.Watch dir
+        watcher.Watch dirs
 
         // sleep forever
         Threading.Thread.Sleep(Threading.Timeout.Infinite)

@@ -104,8 +104,8 @@ type Watcher(reloadFn, filterFn, ?delay:int) =
         | ".fs" | ".fsx" -> true
         | _ -> false
 
-    member x.Watch dir = 
-        watchMB.Post (BeginWatch dir)
+    member x.Watch dirs = 
+        dirs |> List.iter (fun dir -> watchMB.Post (BeginWatch dir))
 
     /// Stops this watcher, releasing all directory watchers.  It remains active, however, so you may still call Watch() to add new directories.
     /// Note that the watchers may produce some final events for a brief period after this is called.
