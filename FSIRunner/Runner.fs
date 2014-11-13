@@ -216,7 +216,7 @@ type Runner() =
             )
 
             logger.Info (sprintf "Plugin reload done; eval: %dms, typescan: %dms, plugin: %dms" totalEval totalTS totalPlugin)
-            logger.Info (sprintf "Total reload time: %dms" sw.ElapsedMilliseconds)
+            logger.Info (sprintf "Reload complete at %A; total reload time: %dms" System.DateTime.Now sw.ElapsedMilliseconds)
         with 
             | e -> 
                 if e.InnerException = null then
