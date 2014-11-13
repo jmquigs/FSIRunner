@@ -3,6 +3,7 @@
 #r "packages/Fuchu/lib/Fuchu.dll"
 #load "Tests.fs"
 
+#load "../FSIRunner/TestUtil.fs"
 #load "../FSIRunner/Types.fs"
 open FSIRunner.Types
 
@@ -11,7 +12,9 @@ type RunnerPlugin() =
 
     let afterReload:AfterReloadFn = (fun rs ->
         let newTypes = rs.[FSIRunner.StateKeys.NewTypes] :?> System.Type list
-        Tests.runTests newTypes
+        let testTypes = TestUtil.getTests newTypes typedefof<Fuchu.TestsAttribute> |> Seq.map (fun t -> t :?> Fuchu.Test)
+
+        Fuchu.Test.Run testTypes |> ignore
     )
 
     interface IRunnerPlugin with

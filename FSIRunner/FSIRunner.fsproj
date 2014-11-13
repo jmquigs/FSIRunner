@@ -49,6 +49,7 @@
     <Compile Include="TypeScan.fsx" />
     <Compile Include="Runner.fs" />
     <Compile Include="Runner.fsx" />
+    <Compile Include="TestUtil.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
   <ItemGroup>
