@@ -27,7 +27,6 @@ type FSISession() =
     let sess = FsiEvaluationSession.Create(fsiConfig, allArgs, inStream, outStream, errStream, collectible=true) 
 
     member x.GetErrorBuffer() =
-        printfn "eb"
         errStream.Flush()
         sbErr.ToString()
 
