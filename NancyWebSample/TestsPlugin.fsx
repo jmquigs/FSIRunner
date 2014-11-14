@@ -1,8 +1,8 @@
 ﻿#load "Project.fsx"
 
 #r "packages/Fuchu/lib/Fuchu.dll"
-#load "Tests.fs"
-#load "Tests2.fs"
+#load "Tests/Tests.fs"
+#load "Tests/Tests2.fs"
 
 #load "../FSIRunner/TestUtil.fs"
 #load "../FSIRunner/Types.fs"

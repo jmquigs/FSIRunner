@@ -227,7 +227,11 @@ type Runner() =
                     // clear the output buffer since we printed the error
                     fsiSession.Value.ClearErrorBuffer()
 
-    member x.Watch (dirs: string list) (pluginScripts: string list) = 
+    // Start the runner with the specified plugins, and watch for changes in the specified directories.  
+    // Use ctrl-c to quit.
+    // Note, subdirectories are not searched due to a current limitation with the FileSystemWatcher on mono.  
+    // If you wish to watch a subdirectory, specify it explicitly.
+    member x.Watch (pluginScripts: string list) (dirs: string list) =
         reinitSession()
         reload pluginScripts
         let watcher = new Watcher((fun () -> 
@@ -235,6 +239,7 @@ type Runner() =
             reload pluginScripts
         ), Watcher.FsFile)
         watcher.Watch dirs
+        //watcher.Watch [ for d in dirsWithSubdirs do yield { WatchPath = d; IncludeSubdirectories = true } ]
 
-        // sleep forever (ctrl-c to quit)
+        // sleep forever 
         Threading.Thread.Sleep(Threading.Timeout.Infinite)

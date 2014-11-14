@@ -43,6 +43,9 @@ module Types =
         member x.Error s = log "Runner[error]" s
     }
 
+    // Used internally by the Runner and watcher
+    type WatchInfo = { WatchPath: string; IncludeSubdirectories: bool }
+
 // Contains the standard state keys that will be available in the runner state
 module StateKeys =
     // This will be set in the state when AfterReload is called.  Its value is a list of the most recent types that were defined

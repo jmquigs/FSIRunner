@@ -58,15 +58,16 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="WebServer.fs" />
     <Compile Include="WebModules.fs" />
-    <Compile Include="Tests.fs" />
-    <Compile Include="Tests2.fs" />
-    <Compile Include="Program.fs" />
     <None Include="TestsPlugin.fsx" />
     <None Include="WebPlugin.fsx" />
     <None Include="Project.fsx" />
     <None Include="StartRunner.fsx" />
+    <Compile Include="Program.fs" />
+    <Compile Include="Tests\Tests.fs" />
+    <Compile Include="Tests\Tests2.fs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="views\" />
+    <Folder Include="Tests\" />
   </ItemGroup>
 </Project>

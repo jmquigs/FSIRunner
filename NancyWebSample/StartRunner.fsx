@@ -5,5 +5,5 @@
 let r = new FSIRunner.Runner()
 // The watcher can't reload itself; however, including FSIRunner in the list of watch directories allows iterative work on TestUtil.fs,
 // which is loaded by TestsPlugin and therefore can be reloaded on changes.
-r.Watch ["."; "../FSIRunner"] [ "WebPlugin.fsx"; "TestsPlugin.fsx" ]
+r.Watch [ "WebPlugin.fsx"; "TestsPlugin.fsx" ] ["../FSIRunner"; "."; "./Tests" ]
 
