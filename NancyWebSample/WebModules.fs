@@ -1,7 +1,7 @@
 ﻿namespace WebModules
 // System.Net.Http is only required for the test endpoint that uses HttpClient.
 // Note: use of this namespace from fsharpi requires an up-to-date fsharp installation; the
-// one that ships with Xamarin 5.6.2 is old, and fsharpi is linked against the .Net 4.0 profile, which will
+// one that ships with Xamarin 5.6.2 is old; fsharpi is linked against the .Net 4.0 profile, which will
 // throw "Missing method System.Net.WebRequest::GetRequestStreamAsync()"
 // when HttpClient's async features are used.
 open System.Net.Http
