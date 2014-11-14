@@ -61,8 +61,14 @@ let asyncHelper block =
     (fun token -> Async.StartAsTask(block, Tasks.TaskCreationOptions.None, token))
 
 let start httpRoot modules = 
+    let hc = new HostConfiguration()
+    hc.RewriteLocalhost <- false
+    let ur = new UrlReservations()
+    ur.CreateAutomatically <- true
+    hc.UrlReservations <- ur
+
     let listen = new Uri(httpRoot)
-    let host = new NancyHost(new NancyHelpers.Bootstrapper(modules), listen)
+    let host = new NancyHost(new NancyHelpers.Bootstrapper(modules), hc, listen)
     host.Start()
     host
 
