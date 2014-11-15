@@ -4,7 +4,7 @@ open Fuchu
 open FSIRunner
 
 [<Tests>]
-let typescanscanThis = 
+let typeScanTests = 
     let myLabel = "TestUtil.getTests should return a list of tests"
     testCase myLabel <| 
         fun _ -> 
