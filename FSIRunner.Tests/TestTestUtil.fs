@@ -5,10 +5,15 @@ open FSIRunner
 
 [<Tests>]
 let typeScanTests = 
+    let withSetupTeardown f () = 
+        XTypeScan.forgetDefinedTypes()
+        let r = f()
+        XTypeScan.forgetDefinedTypes()
+        r
+
     let myLabel = "TestUtil.getTests should return a list of tests"
-    testCase myLabel <| 
+    testCase myLabel <| withSetupTeardown(
         fun _ -> 
-            XTypeScan.forgetDefinedTypes()
             let types = XTypeScan.scan(true)
             Assert.Equal("list should have new types", true, (List.length types > 0))
             let tests = TestUtil.getTests types typeof<Fuchu.TestsAttribute>
@@ -23,6 +28,5 @@ let typeScanTests =
                     false
             )
 
-            Assert.NotEqual("test list should have this test", None, thisTest)
+            Assert.NotEqual("test list should have this test", None, thisTest))
 
-            XTypeScan.forgetDefinedTypes()
