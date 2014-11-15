@@ -8,8 +8,8 @@ open System.Reflection
 module XTypeScan =
     let typesDefinedInSession = new System.Collections.Generic.HashSet<System.Type>()
 
-    let scan(compiled) = 
-        let asm = if compiled then Assembly.GetCallingAssembly() else Assembly.GetExecutingAssembly()
+    let scan(scanCallingAssembly) = 
+        let asm = if scanCallingAssembly then Assembly.GetCallingAssembly() else Assembly.GetExecutingAssembly()
 
         let types = asm.GetTypes() 
         let types = types |> Seq.filter (fun t -> 
@@ -21,3 +21,7 @@ module XTypeScan =
 
         let lst = List.ofSeq types
         lst
+
+    // Normally not used, but important for unit tests
+    let forgetDefinedTypes() =
+        typesDefinedInSession.Clear()
