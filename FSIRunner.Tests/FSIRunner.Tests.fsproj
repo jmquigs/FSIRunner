@@ -43,18 +43,36 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="TestRunner.fs" />
     <Compile Include="TestTypeScan.fs" />
     <Compile Include="TestTestUtil.fs" />
+    <Compile Include="TempTestDir\Dir1\SomeFile1.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="TempTestDir\Dir1\SomeFile2.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="TempTestDir\Dir2\SomeFile3.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
   <ItemGroup>
     <None Include="paket.dependencies" />
     <Compile Include="Program.fs" />
+    <None Include="TempTestDir\Plugin2.fsx" />
+    <None Include="TempTestDir\Plugin1.fsx" />
+    <None Include="TempTestDir\Runner.fsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FSIRunner\FSIRunner.fsproj">
       <Project>{41ED9B83-FF1E-44E0-ABF7-73413871E5FB}</Project>
       <Name>FSIRunner</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TempTestDir\" />
+    <Folder Include="TempTestDir\Dir1\" />
+    <Folder Include="TempTestDir\Dir2\" />
   </ItemGroup>
 </Project>
