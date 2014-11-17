@@ -87,7 +87,8 @@ type Runner() =
 #else
         let asm = (Assembly.GetExecutingAssembly().Location)
         logger.Info (sprintf "Referencing %s in embedded session" asm)
-        fsiSession.Value.EvalInteraction("#r " + asm)
+        let refCmd = "#r \"" + asm + "\""
+        fsiSession.Value.EvalInteraction(refCmd)
 #endif
         pluginDict.Clear()
         logger.Info (sprintf "Session reinitialized: %dms" (sw.ElapsedMilliseconds))
