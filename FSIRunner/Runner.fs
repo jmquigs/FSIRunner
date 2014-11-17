@@ -228,6 +228,10 @@ type Runner() =
                     // clear the output buffer since we printed the error
                     fsiSession.Value.ClearErrorBuffer()
 
+    // Return runner state.  This is here for unit tests only and may be removed in the future.
+    member x.State 
+        with get() = runnerState
+
     // Start the runner with the specified plugins, and watch for changes in the specified directories.  
     // Use ctrl-c to quit.
     // Note, subdirectories are not searched due to a current limitation with the FileSystemWatcher on mono.  
