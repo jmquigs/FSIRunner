@@ -1,3 +1,4 @@
 ﻿source https://nuget.org/api/v2
 
 nuget Fuchu -> 0.4.0.0
+nuget FSharp.Compiler.Service -> 0.0.76
