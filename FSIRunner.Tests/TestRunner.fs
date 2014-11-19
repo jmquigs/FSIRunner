@@ -106,8 +106,8 @@ let runnerTests =
 
             System.Threading.Thread.Sleep(5000)
             let state = r.State
-            Assert.Equal("plugin1 loaded", true, state.ContainsKey("Plugin1AfterReload"))
-            Assert.Equal("plugin2 loaded", true, state.ContainsKey("Plugin2AfterReload"))
+            Assert.Equal("plugin1 loaded1", true, state.ContainsKey("Plugin1AfterReload"))
+            Assert.Equal("plugin2 loaded1", true, state.ContainsKey("Plugin2AfterReload"))
 
             state.Remove("Plugin1AfterReload") |> ignore
             state.Remove("Plugin2AfterReload") |> ignore
@@ -117,18 +117,18 @@ let runnerTests =
             let removedFile = Path.Combine(destRoot, "Dir1", "SomeFile1.fs")
             let text = File.ReadAllText(removedFile)
             File.Delete(removedFile)
-            System.Threading.Thread.Sleep(1500)
-            Assert.Equal("plugin1 loaded", true, state.ContainsKey("Plugin1AfterReload"))
-            Assert.Equal("plugin2 loaded", true, state.ContainsKey("Plugin2AfterReload"))
+            System.Threading.Thread.Sleep(2000)
+            Assert.Equal("plugin1 loaded2", true, state.ContainsKey("Plugin1AfterReload"))
+            Assert.Equal("plugin2 loaded2", true, state.ContainsKey("Plugin2AfterReload"))
 
             // add a file, runner should reload
             state.Remove("Plugin1AfterReload") |> ignore
             state.Remove("Plugin2AfterReload") |> ignore
             printfn "checking add"
             File.WriteAllText(removedFile, text)
-            System.Threading.Thread.Sleep(1500)
-            Assert.Equal("plugin1 loaded", true, state.ContainsKey("Plugin1AfterReload"))
-            Assert.Equal("plugin2 loaded", true, state.ContainsKey("Plugin2AfterReload"))
+            System.Threading.Thread.Sleep(2000)
+            Assert.Equal("plugin1 loaded3", true, state.ContainsKey("Plugin1AfterReload"))
+            Assert.Equal("plugin2 loaded3", true, state.ContainsKey("Plugin2AfterReload"))
 
             // change a file, runner should reload
             let changedFilePath = Path.Combine(destRoot, "Dir1", "SomeFile2.fs")
@@ -138,9 +138,9 @@ let runnerTests =
             File.SetLastWriteTimeUtc(changedFilePath, DateTime.UtcNow)
             printfn "checking update"
             // runner should reload
-            System.Threading.Thread.Sleep(1500)
-            Assert.Equal("plugin1 loaded", true, state.ContainsKey("Plugin1AfterReload"))
-            Assert.Equal("plugin2 loaded", true, state.ContainsKey("Plugin2AfterReload"))
+            System.Threading.Thread.Sleep(2000)
+            Assert.Equal("plugin1 loaded4", true, state.ContainsKey("Plugin1AfterReload"))
+            Assert.Equal("plugin2 loaded4", true, state.ContainsKey("Plugin2AfterReload"))
 
             r.Stop()
             // Give runner time to shutdown the FSWatcher before cleaning up
