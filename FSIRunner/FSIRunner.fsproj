@@ -46,6 +46,7 @@
     <None Include="TestPlugin.fsx" />
     <None Include="TestRunner.fsx" />
     <None Include="paket.dependencies" />
+    <None Include="VariousTestFunctions.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
