@@ -6,6 +6,7 @@
 
 #load "../FSIRunner/TestUtil.fs"
 #load "../FSIRunner/Types.fs"
+open FSIRunner
 open FSIRunner.Types
 
 type RunnerPlugin() =

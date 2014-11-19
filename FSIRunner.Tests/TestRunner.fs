@@ -8,8 +8,10 @@ open System.IO
 
 let tempRoot = Path.GetTempPath()
 let destRoot = Path.Combine(tempRoot, "FSIRunner", "TempTestDir")
-let srcRoot = Path.Combine("..", "..", "TempTestDir")
-let runnerScriptsRoot = Path.Combine("..", "..")
+// the tests can be run from bin/Debug or from "."; select the srcRoot based on which one we are in
+let hasTempTestDir = Directory.Exists("TempTestDir")
+let srcRoot = if hasTempTestDir then "TempTestDir" else Path.Combine("..", "..", "TempTestDir")
+let runnerScriptsRoot = if hasTempTestDir then "." else Path.Combine("..", "..")
 
 let cleanupTestDirectory destRoot =
     if Directory.Exists destRoot then

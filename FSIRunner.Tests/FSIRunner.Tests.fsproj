@@ -41,6 +41,10 @@
     <Compile Include="TestTestUtil.fs" />
     <None Include="paket.dependencies" />
     <Compile Include="Program.fs" />
+    <Content Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="RunTests.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -55,10 +59,5 @@
       <Project>{41ED9B83-FF1E-44E0-ABF7-73413871E5FB}</Project>
       <Name>FSIRunner</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="App.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>
