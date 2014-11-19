@@ -37,7 +37,9 @@ let typescanInteractive =
 let typescanForget = 
     testCase "TypeScan should be able to forget defined types" <| 
         fun _ -> 
-            let types = XTypeScan.scan(true)
+            XTypeScan.forgetDefinedTypes()
+            let types = XTypeScan.scan(true) // may get some types here, depending on run mode
+            let types = XTypeScan.scan(true) // scan again, this time types should be empty
             Assert.Equal("list should not have new types", true, (List.length types = 0))
             XTypeScan.forgetDefinedTypes()
             let types = XTypeScan.scan(true)
