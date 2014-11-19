@@ -88,7 +88,7 @@ let withSetupTeardown f () =
 [<Tests>]
 let runnerTests = 
     testCase "Runner should load plugins and reload on file add,delete,change" <| 
-        withSetupTeardown (fun _ -> 
+        let initRunner() =
             let r = new FSIRunner.Runner()
             let task = async {
                 let pluginList = [ "Plugin1.fsx"; "Plugin2.fsx"] 
@@ -96,6 +96,11 @@ let runnerTests =
                 r.Watch pluginList watchDirs
             } 
             Async.StartAsTask task |> ignore
+            r
+
+        withSetupTeardown (fun _ -> 
+            let r = initRunner()
+
             System.Threading.Thread.Sleep(5000)
             let state = r.State
             Assert.Equal("plugin1 loaded", true, state.ContainsKey("Plugin1AfterReload"))
@@ -133,4 +138,6 @@ let runnerTests =
             System.Threading.Thread.Sleep(1500)
             Assert.Equal("plugin1 loaded", true, state.ContainsKey("Plugin1AfterReload"))
             Assert.Equal("plugin2 loaded", true, state.ContainsKey("Plugin2AfterReload"))
+
+            r.Stop()
         )

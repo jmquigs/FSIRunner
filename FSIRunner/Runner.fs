@@ -62,6 +62,8 @@ type RunnerConfig() =
         and set(value) = sDir <- value
 
 type Runner() =
+    let mutable shouldStop = false
+
     let logger = DefaultLogger
 
     let newSW() = 
@@ -232,6 +234,9 @@ type Runner() =
     member x.State 
         with get() = runnerState
 
+    member x.Stop() =
+        shouldStop <- true
+
     // Start the runner with the specified plugins, and watch for changes in the specified directories.  
     // Use ctrl-c to quit.
     // Note, subdirectories are not searched due to a current limitation with the FileSystemWatcher on mono.  
@@ -239,12 +244,12 @@ type Runner() =
     member x.Watch (pluginScripts: string list) (dirs: string list) =
         reinitSession()
         reload pluginScripts
-        let watcher = new Watcher((fun () -> 
+        use watcher = new Watcher((fun () -> 
             //printfn "Change detected, reloading"
             reload pluginScripts
         ), Watcher.FsFile)
         watcher.Watch dirs
         //watcher.Watch [ for d in dirsWithSubdirs do yield { WatchPath = d; IncludeSubdirectories = true } ]
 
-        // sleep forever 
-        Threading.Thread.Sleep(Threading.Timeout.Infinite)
+        while not shouldStop do
+            Threading.Thread.Sleep(100)
