@@ -11,19 +11,24 @@ let destRoot = Path.Combine(tempRoot, "FSIRunner", "TempTestDir")
 let srcRoot = Path.Combine("..", "..", "TempTestDir")
 let runnerScriptsRoot = Path.Combine("..", "..")
 
-let cleanupTestDirectory created =
-    printfn "removing test files in %s" destRoot
-    let directories = 
-        created |> List.fold (fun acc f ->
-            if File.Exists(f) then 
-                //printfn "removing file: %s" f
-                File.Delete(f)
-                acc
+let cleanupTestDirectory destRoot =
+    if Directory.Exists destRoot then
+        printfn "removing test files in %s" destRoot
+        if not (destRoot.StartsWith(tempRoot)) then failwithf "Illegal directory for cleanup: %s" destRoot
+        if not (destRoot.EndsWith("TempTestDir")) then failwithf "Illegal directory for cleanup: %s" destRoot
+
+        let dryRun = false
+        let iterFn = 
+            if dryRun then 
+                (fun f -> printfn "would delete %s" f) 
             else 
-                f::acc) []
-    directories |> List.iter (fun d ->
-        //printfn "removing directory: %s" d
-        Directory.Delete(d))
+                (fun fileOrDir -> if File.Exists(fileOrDir) then File.Delete(fileOrDir) else Directory.Delete(fileOrDir))
+
+        do 
+            Directory.GetFiles(destRoot, "Plugin*.fsx", SearchOption.AllDirectories) |> Seq.iter iterFn
+            Directory.GetFiles(destRoot, "SomeFile*.fs", SearchOption.AllDirectories) |> Seq.iter iterFn
+            Directory.GetDirectories(destRoot, "*.*", SearchOption.AllDirectories) |> Seq.iter iterFn
+            Directory.Delete destRoot
 
 let setupTestDirectory() =
     if tempRoot.Contains("..") then failwithf "illegal temp directory: %s" tempRoot
@@ -57,7 +62,6 @@ let setupTestDirectory() =
         destdirs @ destfiles @ subcopied
 
     let created = copyFilesToDest srcRoot destRoot
-    printfn "created skeleton test directory in %s" destRoot
     created
 
 let fixFSIRunnerPaths files =
@@ -70,6 +74,7 @@ let fixFSIRunnerPaths files =
             File.WriteAllText(f, text))
 
 let withSetupTeardown f () = 
+    cleanupTestDirectory destRoot
     let wd = Environment.CurrentDirectory 
     XTypeScan.forgetDefinedTypes()
     let created = setupTestDirectory()
@@ -77,27 +82,23 @@ let withSetupTeardown f () =
     Environment.CurrentDirectory <- destRoot
     let r = f()
     XTypeScan.forgetDefinedTypes()
-    cleanupTestDirectory created
+    cleanupTestDirectory destRoot
     Environment.CurrentDirectory <- wd
     r
 
-// It can be helpful to enable this when debugging the test
-//do 
-//    if Directory.Exists(destRoot) then Directory.Delete(destRoot, true)
+let initRunner() =
+    let r = new FSIRunner.Runner()
+    let task = async {
+        let pluginList = [ "Plugin1.fsx"; "Plugin2.fsx"] 
+        let watchDirs = ["Dir1";"Dir2"]
+        r.Watch pluginList watchDirs
+    } 
+    Async.StartAsTask task |> ignore
+    r
 
 [<Tests>]
 let runnerTests = 
     testCase "Runner should load plugins and reload on file add,delete,change" <| 
-        let initRunner() =
-            let r = new FSIRunner.Runner()
-            let task = async {
-                let pluginList = [ "Plugin1.fsx"; "Plugin2.fsx"] 
-                let watchDirs = ["Dir1";"Dir2"]
-                r.Watch pluginList watchDirs
-            } 
-            Async.StartAsTask task |> ignore
-            r
-
         withSetupTeardown (fun _ -> 
             let r = initRunner()
 
@@ -140,4 +141,6 @@ let runnerTests =
             Assert.Equal("plugin2 loaded", true, state.ContainsKey("Plugin2AfterReload"))
 
             r.Stop()
+            // Give runner time to shutdown the FSWatcher before cleaning up
+            System.Threading.Thread.Sleep(1000)
         )
