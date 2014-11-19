@@ -82,8 +82,8 @@ let withSetupTeardown f () =
     Environment.CurrentDirectory <- destRoot
     let r = f()
     XTypeScan.forgetDefinedTypes()
-    cleanupTestDirectory destRoot
     Environment.CurrentDirectory <- wd
+    cleanupTestDirectory destRoot
     r
 
 let initRunner() =
