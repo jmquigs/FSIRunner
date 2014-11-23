@@ -24,7 +24,30 @@ type FSISession() =
     let argv = [| "C:\\fsi.exe" |]
     let allArgs = Array.append argv [|"--noninteractive"|]
 
-    let fsiConfig = FsiEvaluationSession.GetDefaultConfiguration()
+    let defaultConfig = FsiEvaluationSession.GetDefaultConfiguration()
+
+    // Use a custom config to turn off as much non-error logging as we can in the embedded session.
+    // This doesn't get everything, but it does eliminate most of the spam produced by TypeScan.scan(),
+    // and thus speeds up typescan times by a couple hundred ms.
+    let fsiConfig = { new FsiEvaluationSessionHostConfig() with
+        member __.FormatProvider = defaultConfig.FormatProvider
+        member __.FloatingPointFormat = defaultConfig.FloatingPointFormat
+        member __.AddedPrinters = defaultConfig.AddedPrinters
+        member __.ShowDeclarationValues = false
+        member __.ShowIEnumerable = false
+        member __.ShowProperties = false
+        member __.PrintSize = defaultConfig.PrintSize  
+        member __.PrintDepth = defaultConfig.PrintDepth
+        member __.PrintWidth = defaultConfig.PrintWidth
+        member __.PrintLength = defaultConfig.PrintLength
+        member __.ReportUserCommandLineArgs args = defaultConfig.ReportUserCommandLineArgs args
+        member __.EventLoopRun() = defaultConfig.EventLoopRun()
+        member __.EventLoopInvoke(f) = defaultConfig.EventLoopInvoke(f)
+        member __.EventLoopScheduleRestart() = defaultConfig.EventLoopScheduleRestart()
+        member __.UseFsiAuxLib = defaultConfig.UseFsiAuxLib
+        member __.StartServer(fsiServerName) = defaultConfig.StartServer(fsiServerName)        
+        member __.OptionalConsoleReadLine = defaultConfig.OptionalConsoleReadLine }
+
     let sess = FsiEvaluationSession.Create(fsiConfig, allArgs, inStream, outStream, errStream, collectible=true) 
 
     member x.GetErrorBuffer() =
@@ -34,6 +57,10 @@ type FSISession() =
     member x.ClearErrorBuffer() =
         //printfn "Clearing error buffer (length %A)" sbErr.Length
         sbErr.Remove(0, sbErr.Length) |> ignore
+
+    member x.GetOutputBuffer() = 
+        outStream.Flush()
+        sbOut.ToString()
 
     /// Evaluate expression & return the result
     member x.EvalExpression text =
