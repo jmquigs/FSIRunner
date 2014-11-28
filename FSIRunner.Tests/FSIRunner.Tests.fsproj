@@ -45,6 +45,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="RunTests.fsx" />
+    <None Include="TempTestDir\Plugin1.fsx" />
+    <None Include="TempTestDir\Plugin2.fsx" />
+    <None Include="TempTestDir\Dir1\SomeFile1.fs" />
+    <None Include="TempTestDir\Dir1\SomeFile2.fs" />
+    <None Include="TempTestDir\Dir2\SomeFile3.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -59,5 +64,8 @@
       <Project>{41ED9B83-FF1E-44E0-ABF7-73413871E5FB}</Project>
       <Name>FSIRunner</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TempTestDir\" />
   </ItemGroup>
 </Project>

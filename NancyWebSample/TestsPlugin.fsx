@@ -9,16 +9,14 @@ open FSIRunner
 open FSIRunner.Types
 
 type RunnerPlugin() = 
-    let beforeReload : BeforeReloadFn = (fun rs -> ())
-    
     let afterReload : AfterReloadFn = 
-        (fun rs -> 
+        (fun (rs,opts) -> 
         let newTypes = rs.[FSIRunner.StateKeys.NewTypes] :?> System.Type list
         let testTypes = 
             TestUtil.getTests newTypes typedefof<Fuchu.TestsAttribute> |> Seq.map (fun t -> t :?> Fuchu.Test)
         Fuchu.Test.Run testTypes |> ignore)
     
     interface IRunnerPlugin with
-        member x.Init(rs : RunnerState) = 
-            { BeforeReload = beforeReload
-              AfterReload = afterReload }
+        member x.Create(rs : RunnerState) = 
+            { BasePluginDefinition with 
+                AfterReload = afterReload }

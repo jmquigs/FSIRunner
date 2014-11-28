@@ -95,7 +95,7 @@ let initRunner() =
         async { 
             let pluginList = [ "Plugin1.fsx"; "Plugin2.fsx" ]
             let watchDirs = [ "Dir1"; "Dir2" ]
-            r.Watch pluginList watchDirs
+            r.Watch(pluginList,watchDirs)
         }
     Async.StartAsTask task |> ignore
     r

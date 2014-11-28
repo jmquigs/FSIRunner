@@ -18,7 +18,7 @@ type WatchEvent =
 
 #nowarn "40"
 
-type Watcher(reloadFn, filterFn, ?delay : int) = 
+type Watcher(reloadFn, ?delay : int) = 
     let logger = DefaultLogger
     
     let createWatcher (dir : WatchInfo) (filterFn : string -> bool) (eventProcessor : MailboxProcessor<WatchEvent>) = 
@@ -29,7 +29,7 @@ type Watcher(reloadFn, filterFn, ?delay : int) =
             async { 
                 use watcher = 
                     new FileSystemWatcher(dir.WatchPath, EnableRaisingEvents = true, 
-                                          IncludeSubdirectories = dir.IncludeSubdirectories)
+                                          IncludeSubdirectories = false )
                 
                 let watchPost eType = 
                     (fun (e : FileSystemEventArgs) -> 
@@ -69,15 +69,18 @@ type Watcher(reloadFn, filterFn, ?delay : int) =
                     let! message = inbox.TryReceive(iDelay)
                     match message with
                     | Some(BeginWatch dir) -> 
-                        let ok, watcher = watcherDict.TryGetValue dir.WatchPath
+                        // use a composite key of path + all the extensions 
+                        let watchKey = dir.WatchPath + (List.fold (fun acc ext -> acc + ext) "" dir.Extensions  ).ToLowerInvariant()
+                        let ok, watcher = watcherDict.TryGetValue watchKey
                         if ok then 
                             logger.Info(sprintf "Destroying previous watcher for %A" dir)
                             let token = snd watcher
                             token.Cancel()
-                            watcherDict.Remove dir.WatchPath |> ignore
-                        logger.Info(sprintf "Creating watcher for %A" dir.WatchPath)
+                            watcherDict.Remove watchKey |> ignore
+                        logger.Info(sprintf "Creating watcher for %A" dir)
+                        let filterFn = Watcher.ExtensionMatcher dir.Extensions
                         let w, token = createWatcher dir filterFn watchMB
-                        watcherDict.Add(dir.WatchPath, (w, token))
+                        watcherDict.Add(watchKey, (w, token))
                     | Some(FileEvent(watchDir, event, cancelSource)) -> 
                         match event.ChangeType with
                         | WatcherChangeTypes.Created -> restartNeeded.Value <- true
@@ -98,15 +101,21 @@ type Watcher(reloadFn, filterFn, ?delay : int) =
             
             loop())
     
-    static member FsFile x = 
-        match Path.GetExtension(x).ToLowerInvariant() with
-        | ".fs" | ".fsx" -> true
-        | _ -> false
+    static member ExtensionMatcher (extensions: string list) x =
+        let ext = Path.GetExtension(x).ToLowerInvariant()
+        match extensions |> List.tryFind (fun lext -> lext.ToLowerInvariant() = ext) with
+        | None -> false
+        | Some x -> true
+
+    static member FsExtensions with get() = [ ".fs" ; ".fsx" ]
+
+    static member FsFile (x:string) = 
+        Watcher.ExtensionMatcher Watcher.FsExtensions x
     
-    member x.Watch(dirs : string list) = 
+    member x.Watch(dirs : string list, extensions: string list) = 
         dirs |> List.iter (fun dir -> 
                     watchMB.Post(BeginWatch { WatchPath = dir
-                                              IncludeSubdirectories = false }))
+                                              Extensions = extensions }))
     
     member x.Watch dirs = dirs |> List.iter (fun dir -> watchMB.Post(BeginWatch dir))
     
@@ -118,23 +127,29 @@ type Watcher(reloadFn, filterFn, ?delay : int) =
         member x.Dispose() = 
             x.Stop()
             watchMB.Post(Terminate)
-#if INTERACTIVE_DEBUG
 
+#if X
 // This fails to pick up changes in files in the "Tests" subdirectory on mono/osx.  If the directory itself is renamed, then the watcher
 // will pick up changes after that.  Not sure if this is a bug in mono or a limitation of the osx file watcher.  
-open System.IO
 
-let watcher = 
-    new FileSystemWatcher("/Users/john/Dev/FSharp/FSIRunner/NancyWebSample", EnableRaisingEvents = true, 
-                          IncludeSubdirectories = true)
+module private testInFSI =
+    open System.IO
 
-watcher.EnableRaisingEvents <- true
-watcher.IncludeSubdirectories <- true
-watcher.NotifyFilter <- (watcher.NotifyFilter ||| NotifyFilters.DirectoryName ||| NotifyFilters.LastWrite 
-                         ||| NotifyFilters.LastAccess ||| NotifyFilters.Attributes ||| NotifyFilters.CreationTime 
-                         ||| NotifyFilters.FileName ||| NotifyFilters.Security ||| NotifyFilters.Size)
-watcher.Created.Add((fun (e : FileSystemEventArgs) -> printfn "%s created" e.Name))
-watcher.Changed.Add((fun (e : FileSystemEventArgs) -> printfn "%s changed" e.Name))
-watcher.Renamed.Add((fun (e : RenamedEventArgs) -> printfn "%s renamed" e.Name))
-watcher.Deleted.Add((fun (e : FileSystemEventArgs) -> printfn "%s deleted" e.Name))
+    let dir = "/Users/john/Dev/FSharp/FSIRunner/NancyWebSample"
+
+    let watcher = 
+        new FileSystemWatcher(dir, EnableRaisingEvents = true, 
+                              IncludeSubdirectories = true)
+
+    watcher.EnableRaisingEvents <- true
+    watcher.IncludeSubdirectories <- true
+    watcher.Filter <- "*"
+
+    watcher.NotifyFilter <- (watcher.NotifyFilter ||| NotifyFilters.DirectoryName ||| NotifyFilters.LastWrite 
+                             ||| NotifyFilters.LastAccess ||| NotifyFilters.Attributes ||| NotifyFilters.CreationTime 
+                             ||| NotifyFilters.FileName ||| NotifyFilters.Security ||| NotifyFilters.Size)
+    watcher.Created.Add((fun (e : FileSystemEventArgs) -> printfn "%s created" e.Name))
+    watcher.Changed.Add((fun (e : FileSystemEventArgs) -> printfn "%s changed" e.Name))
+    watcher.Renamed.Add((fun (e : RenamedEventArgs) -> printfn "%s renamed" e.Name))
+    watcher.Deleted.Add((fun (e : FileSystemEventArgs) -> printfn "%s deleted" e.Name))
 #endif
