@@ -19,7 +19,7 @@ module Types =
     // enables the use of more complex types both for the RunnerState and PluginDefinition.
     type RunnerState = System.Collections.Generic.Dictionary<string, obj>
 
-    type OptionDict = Map<string,string>
+    type OptionDict = Map<string,obj>
 
     type InitFn = RunnerState * OptionDict -> unit
 
@@ -84,9 +84,6 @@ module StateKeys =
 
     // Provides access to the options dictionary (if any) for the current plugin.
     let Options = "__options"
-
-    // Used by GenProjectPlugin
-    let ProjectFile = "ProjectFile"
 
     // Used internally by the runner
     let PluginInitialized = "__initialized"

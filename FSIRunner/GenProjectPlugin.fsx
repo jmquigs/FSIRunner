@@ -10,12 +10,14 @@ open System.IO
 
 type RunnerPlugin() = 
     let regenProject = (fun (rs:RunnerState,opts:OptionDict) ->
-        let projFile = opts.TryFind (FSIRunner.StateKeys.ProjectFile)
+        let projFile = opts.TryFind "ProjectFile"
         let outFile = "Project.fsx"
         match projFile with
         | None -> printfn "No project file found in options.  Skipping %s generation" outFile
         | Some path -> 
-            GenProject.generate (Path.Combine(System.Environment.CurrentDirectory, path)) outFile
+            let path = unbox path
+            let excludedFilePaths = unbox (defaultArg (opts.TryFind "ExcludedFilePaths") (box []))
+            GenProject.generate (Path.Combine(System.Environment.CurrentDirectory, path)) outFile excludedFilePaths
     )
 
     interface IRunnerPlugin with

@@ -2,9 +2,14 @@
 
 open System.IO
 open System.Xml
+open System
 
 module GenProject =
-     let generate inputFSProjectFile outFile = 
+    let private isUnix = Environment.OSVersion.Platform.ToString().ToLowerInvariant().Contains("unix")
+    let private normalizePath (path:string) =
+        if isUnix then path.Replace(@"\", "/") else path.Replace("/", @"\\")
+
+    let generate inputFSProjectFile outFile (excludedFiles:string list) = 
         let text = File.ReadAllText(inputFSProjectFile)
 
         // This XML code is ripped/modified from one of the FSProjects, but I can't remember which one
@@ -18,6 +23,10 @@ module GenProject =
             nsmgr.AddNamespace("default", document.DocumentElement.NamespaceURI)
             nsmgr
 
+        let excludedFiles = 
+            "assemblyinfo.fs"::excludedFiles // don't need assemblyinfo
+            |> List.map (fun en -> en.ToLowerInvariant()) // case-insensitive compare
+
         let compileNodesXPath = "/default:Project/default:ItemGroup/default:Compile"
         let getCompileNodes (document:XmlDocument) =         
             [for node in document.SelectNodes(compileNodesXPath,nsmgr) -> node]
@@ -26,8 +35,12 @@ module GenProject =
             let cfiles = 
                 cnodes 
                 |> Seq.map (fun n -> 
-                    n.Attributes.GetNamedItem("Include").Value)
-                |> Seq.filter (fun n -> n.ToLowerInvariant() <> "assemblyinfo.fs" ) // don't need this
+                    n.Attributes.GetNamedItem("Include").Value |> normalizePath )
+                |> Seq.filter (
+                    fun n -> 
+                        let nLower = n.ToLowerInvariant()
+                        excludedFiles |> List.tryFind (fun excludedName -> nLower.Contains(excludedName)) |> Option.isNone
+                ) 
             cfiles
 
         let refsXPath = "/default:Project/default:ItemGroup/default:Reference"
@@ -41,7 +54,7 @@ module GenProject =
                 let childName = childName.ToLowerInvariant()
                 let cnode = (Seq.cast n.ChildNodes) |> Seq.tryFind (fun (cn:XmlNode) -> cn.Name.ToLowerInvariant() = childName )
                 match cnode with 
-                | Some cn when (cn.InnerText.Trim() <> "") -> Some (cn.InnerText)
+                | Some cn when (cn.InnerText.Trim() <> "") -> Some (normalizePath cn.InnerText)
                 | None -> None
                 | Some cn -> None
 
@@ -51,7 +64,7 @@ module GenProject =
                     let includeVal = n.Attributes.GetNamedItem("Include").Value.ToString()
                     let includeValLwr = includeVal.ToLowerInvariant()
 
-                    match (List.tryFind (fun ival -> ival = includeValLwr) implicit) with
+                    match (implicit |> List.tryFind (fun ival -> ival = includeValLwr)) with
                     | Some x ->
                         None // don't include implicit references
                     | None ->
