@@ -1,4 +1,5 @@
-﻿open System.IO
+﻿open System
+open System.IO
 open System.Xml
 
 #load "Types.fs"
@@ -16,8 +17,15 @@ type RunnerPlugin() =
         | None -> printfn "No project file found in options.  Skipping %s generation" outFile
         | Some path -> 
             let path = unbox path
-            let excludedFilePaths = unbox (defaultArg (opts.TryFind "ExcludedFilePaths") (box []))
-            GenProject.generate (Path.Combine(System.Environment.CurrentDirectory, path)) outFile excludedFilePaths
+            let lastWriteKey = "GenProjectLastWrite"
+            let srcProjectFile = Path.Combine(System.Environment.CurrentDirectory, path)
+            let mtime = File.GetLastWriteTime(srcProjectFile)
+            let lastWrite = defaultArgRS rs lastWriteKey DateTime.MinValue
+            if mtime > lastWrite then
+                let excludedFilePaths = unbox (defaultArg (opts.TryFind "ExcludedFilePaths") (box []))
+                GenProject.generate srcProjectFile outFile excludedFilePaths
+                rs.[lastWriteKey] <- mtime
+                rs.[StateKeys.RequireCleanSession] <- true
     )
 
     interface IRunnerPlugin with

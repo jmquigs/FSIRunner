@@ -89,10 +89,14 @@ module StateKeys =
     // This will be set in the state when AfterReload is called.  Its value is a list of the most recent types that were defined
     // by a plugin reload.  One of these types is the plugin itself, but that is usually only of interest to the Runner.  
     // Other types may be interesting to the plugin, such as unit test types.
-    let NewTypes = "__newtypes"
+    let NewTypes = "__NewTypes"
 
     // Provides access to the options dictionary (if any) for the current plugin.
-    let Options = "__options"
+    let Options = "__Options"
+
+    // If set by a plugin in BeforeReload, this will cause the runner to reinitialize its FSISession
+    let RequireCleanSession = "__RequireCleanSession"
 
     // Used internally by the runner
-    let PluginInitialized = "__initialized"
+    let PluginInitialized = "__PluginInitialized"
+

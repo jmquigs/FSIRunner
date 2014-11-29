@@ -126,7 +126,11 @@ type Runner() =
     // eventually lead to a "too many open files" exception (fairly rapidly on a mac, where the default limit is low).  
     // As a compromise, reinit the session every so often, allowing previous sessions to be reclaimed at the cost of a somewhat
     // longer load time for the new session.
-    let MaxReloadsPerSession = 0
+    // Note: plugins can also request a clean session by setting a key in runner state during BeforeReload.  This is important
+    // for plugins like the GenProjectPlugin, which could otherwise pick up stale types from a previous reload.
+    // Note2: if this turns out to be too cumbersome to maintain, could just set this to zero and reinit every session, but the
+    // cost of doing that is high enough right now that it pays to avoid it if we can.
+    let MaxReloadsPerSession = 10
     let mutable reloadCount = 0
     let runnerState = new Types.RunnerState()
     
@@ -224,6 +228,7 @@ type Runner() =
                                     conf
                                 
             plugin.FNs.Init(runnerState,configuration.Options)
+            runnerState.Remove(StateKeys.RequireCleanSession) |> ignore // this session is "guaranteed" to be clean
             runnerState.Add(script + StateKeys.PluginInitialized, true)
 
         let pluginElapsed = reloadSW.ElapsedMilliseconds
@@ -238,9 +243,14 @@ type Runner() =
                              let _, configuration = pluginConfigurations.TryGetValue (pScript)
                              let ok, plugin = pluginDict.TryGetValue pScript
                              if ok then plugin.FNs.BeforeReload(runnerState,configuration.Options))
+
+        // reinit the session if we hit the max count or one of the plugins requested it
+        let cleanRestart, _ = runnerState.TryGetValue StateKeys.RequireCleanSession
+
         reloadCount <- reloadCount + 1
-        if (reloadCount > MaxReloadsPerSession) then 
+        if (cleanRestart || reloadCount > MaxReloadsPerSession) then 
             logger.Info("Re-initializing session")
+            runnerState.Remove(StateKeys.RequireCleanSession) |> ignore
             reinitSession()
             reloadCount <- 0
         logger.Info "Reloading plugins"
