@@ -75,6 +75,15 @@ module Types =
     type WatchInfo = 
         { WatchPath : string; Extensions: string list }
 
+    // Utility function for retrieving values from runner state.  Works like defaultArg, but takes 
+    // a runner state as first parameter.
+    let defaultArgRS (rs:RunnerState) key defaultVal:'a =
+        let ok, v = rs.TryGetValue key 
+        if not ok then 
+            defaultVal
+        else
+            v :?> 'a
+
 // Contains the standard state keys that will be available in the runner state
 module StateKeys = 
     // This will be set in the state when AfterReload is called.  Its value is a list of the most recent types that were defined
