@@ -22,8 +22,11 @@ type RunnerPlugin() =
             let mtime = File.GetLastWriteTime(srcProjectFile)
             let lastWrite = defaultArgRS rs lastWriteKey DateTime.MinValue
             if mtime > lastWrite then
-                let excludedFilePaths = unbox (defaultArg (opts.TryFind "ExcludedFilePaths") (box []))
-                GenProject.generate srcProjectFile outFile excludedFilePaths
+                let emptyList:string list = []
+                let excludedFilePaths = unbox (defaultArg (opts.TryFind "ExcludedFilePaths") (box emptyList))
+                let refOrder = unbox (defaultArg (opts.TryFind "ReferenceOrder") (box emptyList))
+
+                GenProject.generate srcProjectFile outFile excludedFilePaths refOrder
                 rs.[lastWriteKey] <- mtime
                 rs.[StateKeys.RequireCleanSession] <- true
     )
