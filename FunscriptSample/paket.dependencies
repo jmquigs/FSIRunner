@@ -1,0 +1,4 @@
+﻿source https://nuget.org/api/v2
+
+nuget FunScript
+nuget FunScript.TypeScript.Binding.three
