@@ -223,7 +223,7 @@ type Runner() =
         // call Init on plugins, just once 
         let initialized, _ = runnerState.TryGetValue (script + StateKeys.PluginInitialized)
         if not initialized then
-            logger.Info (sprintf "Initializing: %s" script)
+            logger.Info (sprintf "Initializing plugins from: %s" script)
             // if no plugin configuration found, just use an empty config
             let hasConfig, configuration = pluginConfigurations.TryGetValue (script)
             let configuration = match hasConfig with
