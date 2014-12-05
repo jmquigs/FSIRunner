@@ -98,7 +98,7 @@ type Runner() =
         sw
     
     let fsiSession = ref (new FSISession())
-    let pluginDict = new System.Collections.Generic.Dictionary<string, Plugin>()
+    let pluginDict = new System.Collections.Generic.Dictionary<string, Plugin list>()
     let pluginConfigurations = new System.Collections.Generic.Dictionary<string, PluginConfiguration>()
     
     let reinitSession() = 
@@ -144,28 +144,30 @@ type Runner() =
         let types = res.Value.ReflectionValue :?> System.Type list
         types
     
-    let initPlugin scriptName (types : System.Type list) : Plugin = 
+    let initPlugin scriptName (types : System.Type list) : Plugin list = 
         let types = 
             types |> List.fold (fun acc t -> 
-                         let members = t.GetNestedTypes()
-                         
-                         let initFn = 
-                             members |> Seq.tryPick (fun m -> 
-                                            let runnerPluginIFace = 
-                                                m.GetInterfaces() 
-                                                |> Seq.tryFind (fun i -> i.FullName.Contains("IRunnerPlugin"))
-                                            match runnerPluginIFace with
-                                            | Some i -> 
-                                                logger.Info(sprintf "Found plugin %A in %s" m scriptName)
-                                                Some(m, i)
-                                            | None -> None)
-                         match initFn with
-                         | None -> acc
-                         | Some(baseType, iface) -> (baseType, iface) :: acc) []
-        match types with
-        | [] -> failwithf "Illegal plugin: %A, contains no implementation of IRunnerPlugin: %A" scriptName types
-        | [ x ] -> 
-            let baseType, iface = x
+                // this assumes that plugin types will be nested types (i.e inside a module), and will implement IRunnerPlugin
+                let members = t.GetNestedTypes()
+                let pluginInitDefs = 
+                    members |> Array.choose (fun m -> 
+                        let runnerPluginIFace = 
+                            m.GetInterfaces() 
+                            |> Seq.tryFind (fun i -> i.FullName.Contains("IRunnerPlugin"))
+                        match runnerPluginIFace with
+                        | Some i -> 
+                            logger.Info(sprintf "Found plugin %A in %s" m scriptName)
+                            Some(m, i)
+                        | None -> None)
+                if (Seq.length pluginInitDefs) = 0 then
+                    acc
+                else
+                    // squash all the discovered plugin pairs into the accumulator using a secondary fold
+                    let acc = pluginInitDefs |> Seq.fold (fun acc (baseType,iface) -> (baseType, iface) :: acc) acc
+                    acc) []
+
+        let instantiatePlugin((baseType:System.Type), (iface:System.Type)) =
+            //let baseType, iface = pTypes
             let cons = baseType.GetConstructor([||])
             let obj = cons.Invoke([||])
             let flags = 
@@ -189,11 +191,20 @@ type Runner() =
             { Plugin.FNs = fns
               Instance = obj
               Name = scriptName }
-        | h :: t -> 
-            failwithf "Illegal plugin: %A, contains more than one implementation of IRunnerPlugin: %A" scriptName types
+
+        match types with
+        | [] -> failwithf "Illegal plugin: %A, contains no implementation of IRunnerPlugin: %A" scriptName types
+        | x -> x |> List.map instantiatePlugin
     
     let stateTypesKey script = "__" + script + "Types"
-    
+
+    let applyToPlugins f pluginScripts =
+        pluginScripts |> Seq.iter (fun pScript -> 
+            // all plugins defined in a script file currently share the same configuration             
+            let _, configuration = pluginConfigurations.TryGetValue (pScript)
+            let ok, plugins = pluginDict.TryGetValue pScript
+            if ok then plugins |> List.iter (fun plugin -> (f plugin configuration))) 
+
     let reloadPluginScript script = 
         let reloadSW = newSW()
         fsiSession.Value.EvalScript script
@@ -203,13 +214,13 @@ type Runner() =
         let typeScanElapsed = reloadSW.ElapsedMilliseconds
         reloadSW.Restart()
         pluginDict.Remove script |> ignore
-        let plugin = initPlugin script newTypes
-        pluginDict.Add(script, plugin)
+        let plugins = initPlugin script newTypes
+        pluginDict.Add(script, plugins)
         let typesKey = stateTypesKey script
         runnerState.Remove(typesKey) |> ignore
         runnerState.Add(typesKey, newTypes) |> ignore
 
-        // call Init on plugin, just once 
+        // call Init on plugins, just once 
         let initialized, _ = runnerState.TryGetValue (script + StateKeys.PluginInitialized)
         if not initialized then
             logger.Info (sprintf "Initializing: %s" script)
@@ -227,22 +238,21 @@ type Runner() =
                                     pluginConfigurations.Add(script,conf) |> ignore
                                     conf
                                 
-            plugin.FNs.Init(runnerState,configuration.Options)
-            runnerState.Remove(StateKeys.RequireCleanSession) |> ignore // this session is "guaranteed" to be clean
+            plugins |> List.iter (fun plugin -> 
+                plugin.FNs.Init(runnerState,configuration.Options)
+                runnerState.Remove(StateKeys.RequireCleanSession) |> ignore) // this session is "guaranteed" to be clean)
+            
             runnerState.Add(script + StateKeys.PluginInitialized, true)
 
         let pluginElapsed = reloadSW.ElapsedMilliseconds
         reloadSW.Restart()
         (evalElapsed, typeScanElapsed, pluginElapsed)
-    
+
     let reload pluginScripts = 
         let sw = newSW()
 
         // call beforeReload
-        pluginScripts |> Seq.iter (fun pScript -> 
-                             let _, configuration = pluginConfigurations.TryGetValue (pScript)
-                             let ok, plugin = pluginDict.TryGetValue pScript
-                             if ok then plugin.FNs.BeforeReload(runnerState,configuration.Options))
+        pluginScripts |> applyToPlugins (fun plugin configuration -> plugin.FNs.BeforeReload(runnerState,configuration.Options))
 
         // reinit the session if we hit the max count or one of the plugins requested it
         let cleanRestart, _ = runnerState.TryGetValue StateKeys.RequireCleanSession
@@ -261,16 +271,14 @@ type Runner() =
                        let totalEval, totalTS, totalPlugin = acc
                        let evalElapsed, typeScanElapsed, pluginElapsed = reloadPluginScript script
                        (totalEval + evalElapsed, totalTS + typeScanElapsed, totalPlugin + pluginElapsed)) (0L, 0L, 0L)
-            pluginScripts |> Seq.iter (fun pScript -> 
-                                 let ok, plugin = pluginDict.TryGetValue pScript
-                                 if ok then 
-                                     let _, configuration = pluginConfigurations.TryGetValue (pScript)
-                                     runnerState.Add(StateKeys.NewTypes, runnerState.[(stateTypesKey plugin.Name)])
-                                     logger.Info(sprintf "Calling AfterReload for %s" plugin.Name)
-                                     try 
-                                         plugin.FNs.AfterReload(runnerState,configuration.Options)
-                                     finally
-                                         runnerState.Remove(StateKeys.NewTypes) |> ignore)
+            pluginScripts |> applyToPlugins (fun plugin configuration -> 
+                        runnerState.Add(StateKeys.NewTypes, runnerState.[(stateTypesKey plugin.Name)])
+                        logger.Info(sprintf "Calling AfterReload for %s" plugin.Name)
+                        try 
+                            plugin.FNs.AfterReload(runnerState,configuration.Options)
+                        finally
+                            runnerState.Remove(StateKeys.NewTypes) |> ignore)
+
             logger.Info
                 (sprintf "Plugin reload done; eval: %dms, typescan: %dms, plugin: %dms" totalEval totalTS totalPlugin)
             logger.Info
