@@ -45,8 +45,10 @@ module GenProject =
             nsmgr.AddNamespace("default", document.DocumentElement.NamespaceURI)
             nsmgr
 
+        let defaultExcludes = [ "AssemblyInfo.fs"; "Project.fsx" ];
+
         let excludedFiles = 
-            "assemblyinfo.fs"::excludedFiles // don't need assemblyinfo
+            defaultExcludes @ excludedFiles 
             |> List.map (fun en -> en.ToLowerInvariant()) // case-insensitive compare
 
         let compileNodesXPath = "/default:Project/default:ItemGroup/default:Compile"
