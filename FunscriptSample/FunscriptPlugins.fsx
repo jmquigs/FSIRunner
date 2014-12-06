@@ -5,9 +5,9 @@ open FSIRunner
 open FSIRunner.Types
 open System.IO
 
-// We define a compile and a web server plugin in this file.  This is fine, a single file can define any number of plugins.
+// We define both a compile plugin and a web server plugin in this file.  This is fine, a single file can define any number of plugins.
 // The main reason to do this is for reload performance; loading Funscript and all of its refs is pretty intense; 
-// if both plugins are in the same file, we only have to load Project.fsx and related types once.  
+// if both plugins are in the same file, we only have to load Project.fsx and related assemblies once.  
 
 // When there are multiple plugins in a file, the plugin callbacks will be invoked in the order the plugins are defined.
 // For example, CompilePlugin's AfterReload will be called prior to WebServerPlugin's AfterReload.
@@ -18,8 +18,9 @@ type CompilePlugin() =
         (fun (rs,opts) -> 
             printfn "funscript compiling"
             let code = FunScript.Compiler.Compiler.Compile(<@ Main.webMain() @>, noReturn=true)
-            printfn "code length: %A; writing app.js" code.Length
-            System.IO.File.WriteAllText(Path.Combine(webRoot,"app.js"), code)
+            let outFile = Path.Combine(webRoot,"app.js")
+            printfn "code length: %A chars; writing %s" code.Length outFile
+            System.IO.File.WriteAllText(outFile, code)
         )
     
     interface IRunnerPlugin with
