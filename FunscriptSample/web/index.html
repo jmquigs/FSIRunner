@@ -1,8 +1,54 @@
 ﻿<html>
 	<head>
-		<title></title>
+		<title>ThreeJS FunScript sample</title>
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+				color: purple;
+			}
+
+			a {
+				color: red;
+			}
+		</style>
 	</head>
 	<body>
+		<div style="position: absolute; top: 10px; width: 100%; text-align: center; ">
+			<a href="http://threejs.org" target="_blank">three.js</a> - Combo Camera<br>
+			View: <a class='set-ortho' href="#"> Orthographic</a> |
+				<a href="#" class='set-persp'>Perspective</a><br>
+			Lens: <a href="#" class='set-lens' data-length="12">12mm</a> |
+				<a href="#" class='set-lens' data-length="16">16mm</a> |
+				<a href="#" class='set-lens' data-length="24">24mm</a> |
+				<a href="#" class='set-lens' data-length="35">35mm</a> |
+				<a href="#" class='set-lens' data-length="50">50mm</a> |
+				<a href="#" class='set-lens' data-length="60">60mm</a> |
+				<a href="#" class='set-lens' data-length="85">85mm</a> |
+				<a href="#" class='set-lens' data-length="105">105mm</a><br>
+			Fov: <a href="#" class='set-fov' data-fov="30">30°</a> |
+				<a href="#" class='set-fov' data-fov="50">50°</a> |
+				<a href="#" class='set-fov' data-fov="70">70°</a> |
+				<a href="#" class='set-fov' data-fov="100">100°</a><br>
+
+			Zoom: <a href="#" class='set-zoom' data-zoom="0.5">0.5x</a> |
+					<a href="#" class='set-zoom' data-zoom="1.0">1x</a> |
+					<a href="#" class='set-zoom' data-zoom="2.0">2x</a> |
+
+				<br/>
+			Views: <a href="#" class ='set-view' data-view="Top">Top view</a> |
+				<a href="#" class ='set-view' data-view="Bottom">Bottom view</a> |
+				<a href="#" class ='set-view' data-view="Left">Left view</a> |
+				<a href="#" class ='set-view' data-view="Right">Right view</a> |
+				<a href="#" class ='set-view' data-view="Front">Front view</a> |
+				<a href="#" class ='set-view' data-view="Back">Back view</a> |
+				<a href="#" class ='set-view' data-view="Scene">Look at Scene</a>
+				<br/>
+			<div id="fov"></div>
+		</div>
+
 		<div id="#container">
 
 		</div>

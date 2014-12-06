@@ -123,6 +123,8 @@ let onLoad() =
     do 
         jsSetField(Globals.window, "totalTimeComputingStuff", totalTimeComputingStuff)
 
+    let lookAtScene = ref true
+
     let render() =
         let start = Globals.Date.Create()
         let timer = Globals.Date.now() * 0.0001
@@ -130,7 +132,8 @@ let onLoad() =
         camera.position.z <- jsSin(timer) * 200.0
         let elapsed = (Globals.Date.Create().getTime() - start.getTime())
 
-        camera.lookAt(scene.position)
+        if lookAtScene.Value then
+            camera.lookAt(scene.position)
 
         renderer.render(scene, camera)
 
@@ -139,6 +142,56 @@ let onLoad() =
     let rec animate (dt:float) =
         Globals.requestAnimationFrame(FrameRequestCallbackDelegate(animate)) |> ignore
         render()
+
+    // UI event handlers
+    let addClickHandler anchorCssClass (f: MouseEvent -> obj) =
+        let a = Globals.document.getElementsByClassName(anchorCssClass)
+        match (int a.length) with
+        | 0 -> Globals.console.log("no a link found for class: " + anchorCssClass)
+        | n -> 
+            let max = n - 1
+            for i in 0..max do 
+                (a.[i] :?> HTMLAnchorElement).addEventListener_click(new System.Func<MouseEvent,obj>(f), true) 
+
+    let setDivHtml divId html =
+        let div = Globals.document.getElementById(divId)
+        div.innerHTML <- html
+
+    addClickHandler "set-ortho" (fun (e) -> 
+        camera.toOrthographic()
+        setDivHtml "fov" "Orthographic mode"
+        null)
+    addClickHandler "set-persp" (fun (e) -> 
+        camera.toPerspective()
+        setDivHtml "fov" "Perspective mode"
+        null)
+    addClickHandler "set-lens" (fun (e) -> 
+        let length = Globals.parseFloat((e.target :?> HTMLAnchorElement).getAttribute("data-length"))
+        let fov = camera.setLens(length)
+        setDivHtml "fov" ("Converted " + length.ToString() + "mm lens to FOV " + fov.ToString() + "&deg;")
+        null)
+    addClickHandler "set-fov" (fun (e) -> 
+        let fov = Globals.parseFloat((e.target :?> HTMLAnchorElement).getAttribute("data-fov"))
+        camera.setFov(fov)
+        setDivHtml "fov" ("FOV " + fov.ToString() + "&deg;")
+        null)
+    addClickHandler "set-zoom" (fun (e) -> 
+        let zoom = Globals.parseFloat((e.target :?> HTMLAnchorElement).getAttribute("data-zoom"))
+        camera.setZoom(zoom)
+        null)
+    addClickHandler "set-view" (fun (e) -> 
+        let view = (e.target :?> HTMLAnchorElement).getAttribute("data-view").Trim()
+        lookAtScene := false
+        match view with 
+        | "Top" -> camera.toTopView()
+        | "Bottom" -> camera.toBottomView()
+        | "Left" -> camera.toLeftView()
+        | "Right" -> camera.toRightView() 
+        | "Front" -> camera.toFrontView()
+        | "Back" -> camera.toBackView()
+        | "Scene" -> lookAtScene := true
+        | _ -> Globals.console.log("unknown view: " + view)
+        null)
 
     // kick it off
     animate(0.0)
