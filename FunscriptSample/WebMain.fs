@@ -1,8 +1,12 @@
 ﻿module Main
 
+// This is a fairly direct port of this sample: http://threejs.org/examples/#canvas_camera_orthographic2
+// The UI event handling is somewhat different; I attach event handlers from the F# code rather than expose global
+// objects to the html, but the latter approach is certainly possible.
+// The original sample contains some clipping/camera bugs which I did not attempt to fix.
+
 open FunScript
 open FunScript.TypeScript
-
 open FunScript.TypeScript.THREE
 
 // TODO: At some point I have to figure out why these functions are reported as "not defined"
@@ -95,7 +99,7 @@ let onLoad() =
         scene.add(ambientLight)
 
         let addDirectionalLight() = 
-            // The compiler generates new THREE.Light for this, which is wrong.  Probably an issue with the typescriptdef
+            // The compiler generates new THREE.Light for this, which is wrong.  Probably an issue with the typescript def
             //let directionalLight = THREE.DirectionalLight.Create(jsRandom() * (float 0xFFFFFF))
             let directionalLight = jsNewThreeDirectionalLight(jsRandom() * (float 0xFFFFFF))
 

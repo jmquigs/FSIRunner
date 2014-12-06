@@ -105,9 +105,8 @@ type Runner() =
         let sw = newSW()
         (fsiSession.Value :> IDisposable).Dispose()
         fsiSession.Value <- new FSISession()
-        // load the runner type utilities in the embedded session.  If we are running in FSI mode, then just except the script file
+        // load the runner type utilities in the embedded session.  If we are running in FSI, then just except the script file
         // otherwise reference the assembly
-        
 #if INTERACTIVE
         logger.Info "Loading TypeScan.fsx in embedded session"
         fsiSession.Value.EvalScript(Path.Combine(RunnerConfig.SourceDirectory, "TypeScan.fsx"))
