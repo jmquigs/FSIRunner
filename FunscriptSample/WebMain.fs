@@ -6,7 +6,7 @@ open FunScript.TypeScript
 open FunScript.TypeScript.THREE
 
 // TODO: At some point I have to figure out why these functions are reported as "not defined"
-// when used directly
+// when used directly; probably a missing assembly
 [<JS; JSEmit("return Math.floor({0}) ")>]
 let jsFloor (a:'a) = failwith "never"
 
@@ -23,6 +23,10 @@ let jsSin (a:'a) = failwith "never"
 // Useful for cases where the typedef is missing the definition of the field.
 [<JS; JSEmit("obj[{1}] = {2} ")>]
 let jsSetField (obj:'a,key:string,value:'b) = failwith "never"
+
+// Another workaround for a typedef issue
+[<JS; JSEmit("return new THREE.DirectionalLight({0}) ")>]
+let jsNewThreeDirectionalLight (dParams:'a):THREE.DirectionalLight = failwith "never"
 
 [<ReflectedDefinition>]
 let onLoad() =
@@ -83,8 +87,7 @@ let onLoad() =
             cube.position.y <- (cube.scale.y * 50.0) / 2.0
             cube.position.z <- jsFloor ( (jsRandom() * 1000.0 - 500.0) / 50.0 ) * 50.0 + 25.0
             scene.add(cube)
-            // The samples don't seem to require updating the transform, but I always have a need for it.  maybe its because the 
-            // samples are based on an older version of three.js that did it automatically
+            // The original samples don't seem to require updating the transform, but I always need to do it.
             cube.updateMatrixWorld(true) 
 
         // Lights
@@ -92,7 +95,10 @@ let onLoad() =
         scene.add(ambientLight)
 
         let addDirectionalLight() = 
-            let directionalLight = THREE.DirectionalLight.Create(jsRandom() * (float 0xFFFFFF))
+            // The compiler generates new THREE.Light for this, which is wrong.  Probably an issue with the typescriptdef
+            //let directionalLight = THREE.DirectionalLight.Create(jsRandom() * (float 0xFFFFFF))
+            let directionalLight = jsNewThreeDirectionalLight(jsRandom() * (float 0xFFFFFF))
+
             directionalLight.position.x <- jsRandom() - 0.5 
             directionalLight.position.y <- jsRandom() - 0.5 
             directionalLight.position.z <- jsRandom() - 0.5 
