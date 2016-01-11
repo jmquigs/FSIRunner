@@ -4,6 +4,8 @@ open System
 open System.IO
 open System.Threading
 open System.Threading.Tasks
+open System.Collections.Generic
+
 open FSIRunner
 open FSIRunner.Types
 
@@ -26,16 +28,48 @@ type Watcher(reloadFn, ?delay : int) =
         let token = tokenSource.Token
         
         let block = 
+            let lastFileStatus = new Dictionary<string,FileInfo>()
+
             async { 
                 use watcher = 
                     new FileSystemWatcher(dir.WatchPath, EnableRaisingEvents = true, 
                                           IncludeSubdirectories = false )
                 
                 let watchPost eType = 
-                    (fun (e : FileSystemEventArgs) -> 
-                    if filterFn e.FullPath then 
-                        logger.Info(sprintf "File %s: %s" eType e.FullPath)
-                        eventProcessor.Post(FileEvent(dir.WatchPath, e, tokenSource)))
+                    fun (e : FileSystemEventArgs) -> 
+                        if filterFn e.FullPath then 
+                            
+                            let logit ignored = 
+                                let mutable msg = sprintf "File %s: %s" eType e.FullPath
+                                if ignored then
+                                    msg <- msg + " (ignored)"
+                                logger.Info(msg)
+
+                            // the low level watcher can produce a lot of duplicate events with no apparent changes.  
+                            // filter out events where effectively nothing has changed since the last event
+                            let haveStatus, lastStatus = lastFileStatus.TryGetValue(e.FullPath)
+                            let ignored = 
+                                if eType = "deleted" then 
+                                    lastFileStatus.Remove(e.FullPath) |> ignore
+                                    false
+                                else
+                                    // make sure something changed before posting event
+                                    let fi = new FileInfo(e.FullPath)
+                                    if fi.Exists && 
+                                        (not haveStatus || 
+                                            // Note: since this doesn't checksum it could miss a single byte change, but hopefully 
+                                            // last write time will catch that case.
+                                            (fi.Length <> lastStatus.Length
+                                            || fi.Attributes <> lastStatus.Attributes 
+                                            || fi.LastWriteTime <> lastStatus.LastWriteTime)) then
+                                        lastFileStatus.Add(e.FullPath, fi)
+                                        false
+                                    else
+                                        true
+                            logit ignored
+                            if not ignored then 
+                                eventProcessor.Post(FileEvent(dir.WatchPath, e, tokenSource))
+
                 watcher.Created.Add(watchPost "created")
                 watcher.Changed.Add(watchPost "changed")
                 watcher.Renamed.Add(watchPost "renamed")
